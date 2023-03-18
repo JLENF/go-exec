@@ -1,0 +1,22 @@
+[Unit]
+Description=go-exec Service
+ConditionPathExists=/usr/local/etc
+After=network.target
+
+[Service]
+Type=simple
+User=root
+Group=root
+
+WorkingDirectory=/usr/local/etc
+ExecStart=/usr/local/sbin/go-exec
+
+Restart=on-failure
+RestartSec=10
+
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=go-exec
+
+[Install]
+WantedBy=multi-user.target

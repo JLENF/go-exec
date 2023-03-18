@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>ADD Command</title>
+</head>
+<body>
+    <h1>ADD Command</h1>
+    <form method="POST" action="">
+        <label for="id_server">Server:</label>
+        <select id="id_server" name="id_server">
+            {% for id, hostname in servidores %}
+            <option value="{{ id }}">{{ hostname }}</option>
+            {% endfor %}
+        </select><br><br>
+        <label for="comando">Command:</label>
+        <input type="text" id="command" name="command"><br><br>
+        <label for="timeout">Timeout:</label>
+        <input type="number" id="timeout" name="timeout" value="30"><br><br>
+        <label for="bash">Bash:</label>
+        <input type="checkbox" id="bash" name="bash" value="True"><br><br>
+        <label for="process">Process:</label>
+        <input type="checkbox" id="process" name="process" value="True"><br><br>
+        <label for="relative_exec">Relative Exec:</label>
+        <input type="text" id="relative_exec" name="relative_exec"><br><br>
+        <input type="submit" value="Cadastrar">
+    </form>
+</body>
+</html>
