@@ -1,6 +1,6 @@
 # go-exec
 
-go-exec is a utility client/server written in Go and Python to executing commands remotely.
+go-exec is a client/server utility written in Go and Python to executing commands remotely.
 
 ## The goal
 
