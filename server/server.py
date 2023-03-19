@@ -13,7 +13,7 @@ auto_discovery_enabled = True
 def connect_db():
     # connect to database
     conexao = pymysql.connect(
-        host='127.0.0.1',
+        host='172.17.0.2',
         user='root',
         password='SQL_PASSWORD',
         database='go-exec'
@@ -134,16 +134,16 @@ def get_cmd():
                 # check if downloaded_at is not null
                 if query_relative[2] is None:
                     close_db(cursor,conexao)
-                    print("Relative command not executed")
+                    #print("Relative command not executed")
                     return abort(412)
                 else:
                     # check if exitcode is 0
-                    print(query_relative[1])
+                    #print(query_relative[1])
                     if int(query_relative[1]) != 0:
                         eror_msg = f"Relative command: {relative_exec} exitcode is not 0"
                         cursor.execute('UPDATE commands SET downloaded_at = %s, stdout = %s WHERE id = %s', (datetime.now(),eror_msg,id_command,))
                         close_db(cursor,conexao)
-                        print("Relative command exitcode is not 0")
+                        #print("Relative command exitcode is not 0")
                         return abort(412)
 
         # if not exists relative command
@@ -274,7 +274,7 @@ def server(action, id = None):
                 'active': row[9]
             })
         # for debug
-        print(result) 
+        #print(result) 
         close_db(cursor,conexao)
         return render_template('server_list.html', result=result)
 
@@ -423,7 +423,7 @@ def command(action, id = None):
                 'duration': row[16]
             })
         # for debug
-        print(result) 
+        #print(result) 
         close_db(cursor,conexao)
         return render_template('command_list.html', result=result)
 
