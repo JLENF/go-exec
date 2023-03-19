@@ -1,4 +1,4 @@
-from flask import Flask, jsonify, request, abort, render_template
+from flask import Flask, jsonify, request, abort, render_template, redirect
 import hashlib
 import pymysql
 from datetime import datetime
@@ -204,75 +204,228 @@ def result():
     })   
     return jsonify(response_items)
 
-@app.route('/add_server', methods=['GET', 'POST'])
-def cadastrar_servidor():
-    if request.method == 'POST':
-        # receive data from form
-        hostname = request.form['hostname']
-        # if auth_key is empty, generate a random string
-        if request.form['auth_key'] == '':
-            auth_key = ''.join(random.choices(string.ascii_letters + string.digits, k=50))
-        else:
-            auth_key = request.form['auth_key']
-        created_at = datetime.now()
-        group = None if request.form['group'] == '' else request.form['group']
-        subgroup = None if request.form['subgroup'] == '' else request.form['subgroup']
+@app.route('/server/<string:action>', methods=['GET', 'POST'])
+@app.route('/server/<string:action>/<int:id>', methods=['GET','POST'])
+def server(action, id = None):
 
-        # save to database
-        conexao = connect_db()
-        cursor = conexao.cursor()   
-        # check if hostname already exists
-        cursor.execute('SELECT id FROM servers WHERE hostname = %s LIMIT 1', hostname,)
-        query = cursor.fetchone()
-        if query is not None:
-            close_db(cursor,conexao)
-            # return a message of error
-            mensagem = 'Hostname já cadastrado!'
-            return render_template('message.html', mensagem=mensagem)
-        else:
+    if action == 'add':
+        if request.method == 'POST':
+            # receive data from form
+            hostname = request.form['hostname']
+            # if auth_key is empty, generate a random string
+            if request.form['auth_key'] == '':
+                auth_key = ''.join(random.choices(string.ascii_letters + string.digits, k=50))
+            else:
+                auth_key = request.form['auth_key']
+            created_at = datetime.now()
+            group = None if request.form['group'] == '' else request.form['group']
+            subgroup = None if request.form['subgroup'] == '' else request.form['subgroup']
+
+            # save to database
+            conexao = connect_db()
+            cursor = conexao.cursor()   
+            # check if hostname already exists
+            #cursor.execute('SELECT id FROM servers WHERE hostname = %s AND deleted_at IS NULL', (hostname,))
+            #query = cursor.fetchone()
+            #if query is not None:
+            #    close_db(cursor,conexao)
+            #    # return a message of error
+            #    mensagem = 'Hostname já cadastrado!'
+            #    return render_template('message.html', mensagem=mensagem)
+            #else:
             cursor.execute('INSERT INTO servers (hostname, auth_key, created_at, id_group, id_subgroup,registered_by) VALUES (%s, %s, %s, %s, %s,%s)', (hostname, auth_key, created_at, group, subgroup,'form_add_server'))
             id_server = cursor.lastrowid
             cursor.execute('INSERT INTO monitor (id_server,api_version) VALUES (%s,%s)', (id_server,'v1.0'))
             close_db(cursor,conexao)    
 
-        # return a message of success
-        mensagem = 'Server registered successfully!'
-        return render_template('message.html', mensagem=mensagem)
-    else:
-        # render form
-        return render_template('add_server.html')
+            # return a message of success
+            mensagem = 'Server registered successfully!'
+            return render_template('message.html', mensagem=mensagem)
+        else:
+            # render form
+            return render_template('server_add.html')
 
-@app.route('/add_command', methods=['GET', 'POST'])
-def cadastrar_comando():
-    if request.method == 'POST':
-        # receive data from form
-        id_server = request.form['id_server']
-        command = request.form['command']
-        md5 = get_hash(command)
-        timeout = request.form.get('timeout', 30)
-        bash = 1 if request.form.get('bash', False) else 0
-        process = 1 if request.form.get('process', False) else 0
-        relative_exec = None if request.form['relative_exec'] == '' else request.form['relative_exec']
-
+    # if action is list, render template
+    elif action == 'list':
+        # query all servers
         conexao = connect_db()
         cursor = conexao.cursor()   
-        # insert command to database
-        cursor = conexao.cursor()
-        cursor.execute('INSERT INTO commands (id_server, command, md5, timeout, bash, process, relative_exec, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (id_server, command, md5, timeout, bash, process, relative_exec, datetime.now(),))
-        close_db(cursor,conexao)    
+        cursor.execute('SELECT id, hostname, auth_key, name, created_at, updated_at, id_group, id_subgroup, registered_by, active FROM servers WHERE deleted_at IS NULL ORDER BY hostname ASC')
+        query_servers = cursor.fetchall()
+        
+        # if query is empty, redirect to home
+        if not query_servers:
+                mensagem = 'Servers not found! Please register a server first.'
+                return render_template('message.html', mensagem=mensagem)
 
-        # return a message of success
-        mensagem = 'Command registered successfully!'
-        return render_template('message.html', mensagem=mensagem)
-    else:
-        conexao = connect_db()
-        cursor = conexao.cursor()   
-        cursor.execute('SELECT id, hostname FROM servers WHERE active = 1 ORDER BY hostname ASC')
-        servidores = cursor.fetchall()
+        result = []
+        for row in query_servers:
+            # create json with id_commands
+            result.append({
+                'id': row[0],
+                'hostname': row[1],
+                'auth_key': row[2],
+                'name': row[3],
+                'created_at': row[4],
+                'updated_at': row[5],
+                'group': row[6],
+                'subgroup': row[7],
+                'registered_by': row[8],
+                'active': row[9]
+            })
+        # for debug
+        print(result) 
         close_db(cursor,conexao)
+        return render_template('server_list.html', result=result)
 
-        # render form
-        return render_template('add_command.html', servidores=servidores)
+    elif action == 'disable':
+        if id is not None:
+            conexao = connect_db()
+            cursor = conexao.cursor()   
+            cursor.execute("UPDATE servers SET active = 0 WHERE id = %s", (id))
+            close_db(cursor,conexao)
+            return redirect('/server/list')
+
+    elif action == 'enable':
+        if id is not None:
+            conexao = connect_db()
+            cursor = conexao.cursor()   
+            cursor.execute("UPDATE servers SET active = 1 WHERE id = %s", (id))
+            close_db(cursor,conexao)
+            return redirect('/server/list')
+        
+    elif action == 'edit':
+        # if form is submitted, update database
+        if request.method == 'POST':
+            id = request.form['id']
+            hostname = request.form['hostname']
+            auth_key = request.form['auth_key']
+            name = request.form['name']
+            group = request.form['group']
+            subgroup = request.form['subgroup']
+            active = request.form['active']
+
+            conexao = connect_db()
+            cursor = conexao.cursor()
+            # check if hostname and auth_key already exists
+            cursor.execute('SELECT id FROM servers WHERE hostname = %s AND auth_key = %s AND deleted_at IS NULL', (hostname, auth_key))
+            query = cursor.fetchall()
+            # if query is upper than 1, return a message of error
+            if len(query) > 1:
+                close_db(cursor,conexao)
+                # return a message of error
+                mensagem = 'Hostname and auth_key already exists!'
+                return render_template('message.html', mensagem=mensagem)
+            else:
+                cursor.execute("UPDATE servers SET hostname = %s, auth_key = %s, name = %s, updated_at = NOW(), active = %s, id_group = %s, id_subgroup = %s WHERE id = %s", (hostname, auth_key, name, active, group, subgroup, id))
+                close_db(cursor,conexao)
+                return redirect('/server/list')
+        # if form is not submitted, render template
+        conexao = connect_db()
+        cursor = conexao.cursor()   
+        cursor.execute('SELECT id, hostname, auth_key, name, id_group, id_subgroup, active FROM servers WHERE id = %s LIMIT 1', (int(id)))
+        query_servers = cursor.fetchone()
+        close_db(cursor,conexao)
+        if not query_servers:
+            return redirect('/server/list')
+        result = {
+            'id': query_servers[0],
+            'hostname': query_servers[1],
+            'auth_key': query_servers[2],
+            'name': query_servers[3],
+            'group': query_servers[4],
+            'subgroup': query_servers[5],
+            'active': query_servers[6]
+        }
+        return render_template('server_edit.html', result=result)
+    
+    elif action == 'delete':
+        if id is not None:
+            conexao = connect_db()
+            cursor = conexao.cursor()   
+            cursor.execute("UPDATE servers SET deleted_at = NOW() WHERE id = %s", (id))
+            close_db(cursor,conexao)
+            return redirect('/server/list')
+    else:
+        redirect('/server/list')
+
+@app.route('/command/<string:action>', methods=['GET', 'POST'])
+@app.route('/command/<string:action>/<int:id>', methods=['GET','POST'])
+def command(action, id = None):
+
+    # if action is add, render template
+    if action == 'add':
+        # if form is submitted, insert data to database
+        if request.method == 'POST':
+            # receive data from form
+            id_server = request.form['id_server']
+            command = request.form['command']
+            md5 = get_hash(command)
+            timeout = request.form.get('timeout', 30)
+            bash = 1 if request.form.get('bash', False) else 0
+            process = 1 if request.form.get('process', False) else 0
+            relative_exec = None if request.form['relative_exec'] == '' else request.form['relative_exec']
+
+            conexao = connect_db()
+            cursor = conexao.cursor()   
+            # insert command to database
+            cursor = conexao.cursor()
+            cursor.execute('INSERT INTO commands (id_server, command, md5, timeout, bash, process, relative_exec, created_at) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)', (id_server, command, md5, timeout, bash, process, relative_exec, datetime.now(),))
+            close_db(cursor,conexao)    
+
+            # return a message of success
+            #mensagem = 'Command registered successfully!'
+            #return render_template('message.html', mensagem=mensagem)
+            return redirect('/command/list')
+        else:
+            conexao = connect_db()
+            cursor = conexao.cursor()   
+            cursor.execute('SELECT id, hostname FROM servers WHERE active = 1 AND deleted_at IS NULL ORDER BY hostname ASC')
+            servidores = cursor.fetchall()
+            close_db(cursor,conexao)
+
+            # render form
+            return render_template('command_add.html', servidores=servidores)
+    elif action == 'list':
+        conexao = connect_db()
+        cursor = conexao.cursor()
+        # select last 5 commands
+        cursor.execute('SELECT c.id, s.name, s.hostname, c.command, c.timeout, c.bash, c.process, c.relative_exec, c.relative_retry, c.relative_retried, c.created_at, c.downloaded_at, c.executed_at, c.stdout, c.stderr, c.exitcode, c.duration FROM commands c JOIN servers s ON c.id_server = s.id ORDER BY c.id DESC LIMIT 5')
+        #cursor.execute('SELECT c.id, c.id_server, c.command, c.md5, c.timeout, c.bash, c.process, c.relative_exec, c.created_at, c.updated_at, s.hostname FROM commands c INNER JOIN servers s ON c.id_server = s.id WHERE c.deleted_at IS NULL ORDER BY c.created_at DESC')
+        query_commands = cursor.fetchall()
+        
+        # if query is empty, redirect to home
+        if not query_commands:
+                mensagem = 'Commands not found! Please register a command first.'
+                return render_template('message.html', mensagem=mensagem)
+
+        # create a list of commands to render
+        result = []
+        for row in query_commands:
+            # create json with id_commands
+            result.append({
+                'id': row[0],
+                'name': row[1],
+                'hostname': row[2],
+                'command': row[3],
+                'timeout': row[4],
+                'bash': row[5],
+                'process': row[6],
+                'relative_exec': row[7],
+                'relative_retry': row[8],
+                'relative_retried': row[9],
+                'created_at': row[10],
+                'downloaded_at': row[11],
+                'executed_at': row[12],
+                'stdout': row[13],
+                'stderr': row[14],
+                'exitcode': row[15],
+                'duration': row[16]
+            })
+        # for debug
+        print(result) 
+        close_db(cursor,conexao)
+        return render_template('command_list.html', result=result)
 
 if __name__ == '__main__':
     # listen on all IPs

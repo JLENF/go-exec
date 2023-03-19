@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>List Servers</title>
+  </head>
+  <body>
+    <h1>List Servers</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>hostname</th>
+          <th>auth_key</th>
+          <th>name</th>
+          <th>created_at</th>
+          <th>updated_at</th>
+          <th>group</th>
+          <th>subgroup</th>
+          <th>registered_by</th>
+          <th>active</th>
+          <th>Ativar/Desativar</th>
+          <th>Editar</th>
+          <th>Excluir</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in result %}
+        <tr>
+          <td>{{ item['id'] }}</td>
+          <td>{{ item['hostname'] }}</td>
+          <td>{{ item['auth_key'] }}</td>
+          <td>{{ item['name'] }}</td>
+          <td>{{ item['created_at'] }}</td>
+          <td>{{ item['updated_at'] }}</td>
+          <td>{{ item['group'] }}</td>
+          <td>{{ item['subgroup'] }}</td>
+          <td>{{ item['registered_by'] }}</td>
+          <td>{{ item['active'] }}</td>
+          {% if item['active'] == 1 %}
+            <td><a href="{{ url_for('server', action='disable', id=item['id']) }}">Deactivate</a></td>
+          {% else %}
+            <td><a href="{{ url_for('server', action='enable', id=item['id']) }}">Activate</a></td>
+          {% endif %}
+          <td><a href="{{ url_for('server', action='edit', id=item['id']) }}">Edit</a></td>
+          <td><a href="{{ url_for('server', action='delete', id=item['id']) }}">Remove</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>
