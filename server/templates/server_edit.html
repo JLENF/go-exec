@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Edit Server</title>
+  </head>
+  <body>
+    <h1>Edit Server</h1>
+    <form method="post">
+      <input type="hidden" name="id" value="{{ result['id'] }}">
+      <label for="hostname">hostname:</label>
+      <input type="text" name="hostname" value="{{ result['hostname'] }}" required>
+      <br>
+      <label for="hostname">auth_key:</label>
+      <input type="text" name="auth_key" value="{{ result['auth_key'] }}" required>
+      <br>
+      <label for="hostname">name:</label>
+      <input type="text" name="name" value="{{ result['name'] }}" required>
+      <br>
+      <label for="hostname">group:</label>
+      <input type="text" name="group" value="{{ result['group'] }}" required>
+      <br>
+      <label for="hostname">subgroup:</label>
+      <input type="text" name="subgroup" value="{{ result['subgroup'] }}" required>
+      <br>
+      <label for="hostname">active:</label>
+      <input type="text" name="active" value="{{ result['active'] }}" required>
+      <br>
+      <button type="submit">Save</button>
+    </form>
+  </body>
+</html>

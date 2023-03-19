@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>List Commands</title>
+  </head>
+  <body>
+    <h1>List Commands</h1>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>name</th>
+          <th>hostname</th>
+          <th>command</th>
+          <th>timeout</th>
+          <th>bash</th>
+          <th>process</th>
+          <th>relative_exec</th>
+          <th>relative_retry</th>
+          <th>relative_retried</th>
+          <th>created_at</th>
+          <th>downloaded_at</th>
+          <th>executed_at</th>
+          <th>stdout</th>
+          <th>stderr</th>
+          <th>exitcode</th>
+          <th>duration</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for item in result %}
+        <tr>
+          <td>{{ item['id'] }}</td>
+          <td>{{ item['name'] }}</td>
+          <td>{{ item['hostname'] }}</td>
+          <td>{{ item['command'] }}</td>
+          <td>{{ item['timeout'] }}</td>
+          <td>{{ item['bash'] }}</td>
+          <td>{{ item['process'] }}</td>
+          <td>{{ item['relative_exec'] }}</td>
+          <td>{{ item['relative_retry'] }}</td>
+          <td>{{ item['relative_retried'] }}</td>
+          <td>{{ item['created_at'] }}</td>
+          <td>{{ item['downloaded_at'] }}</td>
+          <td>{{ item['executed_at'] }}</td>
+          <td>{{ item['stdout'] }}</td>
+          <td>{{ item['stderr'] }}</td>
+          <td>{{ item['exitcode'] }}</td>
+          <td>{{ item['duration'] }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </body>
+</html>
