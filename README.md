@@ -39,11 +39,15 @@ python3 server.py
 
 ### Add server and commands
 
-There are two routes in the flask for you to add server and add the commands in your browser (without authentication):
+These are the routes in the flask for you to list and add servers/commands in your browser (without authentication):
 
-[http://127.0.0.1:5000/add_server](http://127.0.0.1:5000/add_server)
+[http://127.0.0.1:5000/server/add](http://127.0.0.1:5000/server/add)
 
-[http://127.0.0.1:5000/add_command](http://127.0.0.1:5000/add_command)
+[http://127.0.0.1:5000/server/list](http://127.0.0.1:5000/server/list)
+
+[http://127.0.0.1:5000/command/add](http://127.0.0.1:5000/command/add)
+
+[http://127.0.0.1:5000/command/list](http://127.0.0.1:5000/command/list)
 
 
 ## Client
