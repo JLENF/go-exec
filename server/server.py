@@ -4,8 +4,10 @@ import pymysql
 from datetime import datetime
 import random
 import string
+from config import Config
 
 app = Flask(__name__)
+app.config.from_object('config.Config')
 
 # variables
 auto_discovery_enabled = True
@@ -13,10 +15,10 @@ auto_discovery_enabled = True
 def connect_db():
     # connect to database
     conexao = pymysql.connect(
-        host='172.17.0.2',
-        user='root',
-        password='SQL_PASSWORD',
-        database='go-exec'
+        host=Config.MYSQL_HOST,
+        user=Config.MYSQL_USER,
+        password=Config.MYSQL_PASSWORD,
+        database=Config.MYSQL_DATABASE
     )
     return conexao
 

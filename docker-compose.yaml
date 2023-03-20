@@ -1,0 +1,37 @@
+version: "3"
+services:
+  web:
+    build:
+      context: ./server/nginx/
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    networks:
+      - go-exec-network
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    networks:
+      - go-exec-network
+    hostname: app-docker
+
+  mysql:
+    build:
+      context: ./server/mysql/
+      dockerfile: Dockerfile
+    environment:
+        MYSQL_ROOT_PASSWORD: SQL_PASSWORD
+        MYSQL_DATABASE: go-exec
+    volumes:
+      - ./server/mysql/data-mysql:/var/lib/mysql
+    networks:
+      - go-exec-network
+    hostname: mysql-docker
+
+networks:
+  go-exec-network:
+
