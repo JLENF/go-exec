@@ -1,4 +1,4 @@
-USE `goexec`;
+USE `go-exec`;
 
 DROP TABLE IF EXISTS `commands`;
 
