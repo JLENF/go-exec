@@ -69,6 +69,7 @@ go run go-exec.go
 
 ### Building a client
 ```bash
+go env -w GO111MODULE=off
 go build .
 ```
 
