@@ -1,5 +1,11 @@
 ## Running app, mysql and nginx via docker-compose:
 
+## build images
+
+```bash
+docker compose build --no-cache
+```
+
 ## start containers
 
 ```bash

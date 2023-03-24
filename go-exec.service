@@ -9,7 +9,7 @@ User=root
 Group=root
 
 WorkingDirectory=/usr/local/etc
-ExecStart=/usr/local/sbin/go-exec
+ExecStart=/usr/bin/go-exec
 
 Restart=on-failure
 RestartSec=10
