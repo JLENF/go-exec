@@ -20,7 +20,7 @@ go-exec is a client for execute command by remote webservice.
 
 %post
 systemctl daemon-reload
-systemctl enable %{name}.service --now
+systemctl enable %{name}.service
 
 %clean
 rm -rf %{buildroot}
